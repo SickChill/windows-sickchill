@@ -4,7 +4,7 @@ A Windows Installer for SickRage
 Features
 --------
 Here are some of the features of SickRageInstaller:
-- Downloads SickRage dependencies (Git, Python, pyOpenSSL, Cheetah)
+- Downloads SickRage dependencies (Git, Python, pyOpenSSL)
 - Installs everything (SickRage and dependencies) in a self-contained directory
 - Installs SickRage as a Windows service (handled by NSSM)
 - Detects 32-bit and 64-bit architectures and installs appropriate dependencies
