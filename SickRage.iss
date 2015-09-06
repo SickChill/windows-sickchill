@@ -12,7 +12,7 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10000
+#define InstallerVersion 10001
 #define InstallerSeedUrl "https://raw.github.com/VinceVal/SickRageInstaller/master/seed.ini"
 #define AppRepoUrl "https://github.com/SiCKRAGETV/SickRage.git"
 
@@ -44,8 +44,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "utils\unzip.exe"; Flags: dontcopy
-Source: "utils\tar.exe"; Flags: dontcopy
-Source: "utils\gzip.exe"; Flags: dontcopy
 Source: "assets\sickrage.ico"; DestDir: "{app}\Installer"
 Source: "assets\github.ico"; DestDir: "{app}\Installer"
 Source: "utils\nssm32.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Check: Is64BitInstallMode
@@ -156,7 +154,7 @@ var
   CancelWithoutPrompt: Boolean;
   ErrorMessage, LocalFilesDir: String;
   SeedDownloadPageId, DependencyDownloadPageId: Integer;
-  PythonDep, PyOpenSSLDep, CheetahDep, GitDep: TDependency;
+  PythonDep, PyOpenSSLDep, GitDep: TDependency;
   InstallDepPage: TOutputProgressWizardPage;
   OptionsPage: TInputQueryWizardPage;
   // Uninstall variables
@@ -266,7 +264,6 @@ begin
 
   ParseDependency(PythonDep,    'Python.'    + Arch, SeedFile)
   ParseDependency(PyOpenSSLDep, 'pyOpenSSL.' + Arch, SeedFile)
-  ParseDependency(CheetahDep,   'Cheetah',           SeedFile)
   ParseDependency(GitDep,       'Git.'       + Arch, SeedFile)
 
   DependencyDownloadPageId := idpCreateDownloadForm(wpPreparing)
@@ -383,28 +380,6 @@ begin
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
 end;
 
-procedure InstallCheetah();
-var
-  ResultCode: Integer;
-  DirName: String;
-begin
-  InstallDepPage.SetText('Installing Cheetah...', '')
-  ExtractTemporaryFile('gzip.exe')
-  ExtractTemporaryFile('tar.exe')
-  DirName := CheetahDep.Filename
-  if (Copy(DirName, Length(DirName)-6, 7) = '.tar.gz') then begin
-    Delete(DirName, Length(DirName)-6, 7)
-  end;
-  DirName := ExpandConstant('{tmp}\') + DirName
-  Exec(ExpandConstant('{cmd}'), ExpandConstantEx('/C "cd "{tmp}" && gzip.exe -dc "{filename}" | tar.exe xf -"', 'filename', CheetahDep.Filename), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
-  if DirExists(DirName) then begin
-    Exec(ExpandConstant('{app}\Python\python.exe'), 'setup.py install', DirName, SW_HIDE, ewWaitUntilTerminated, ResultCode)
-  end else begin
-    MsgBox('Error installing Cheetah.', mbError, 0)
-  end;
-  InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
-end;
-
 procedure InstallGit();
 var
   ResultCode: Integer;
@@ -432,7 +407,6 @@ begin
 
   Result := Result and VerifyDependency(PythonDep)
   Result := Result and VerifyDependency(PyOpenSSLDep)
-  Result := Result and VerifyDependency(CheetahDep)
   Result := Result and VerifyDependency(GitDep)
 end;
 
@@ -451,7 +425,6 @@ begin
     if VerifyDependencies() then begin
       InstallPython()
       InstallPyOpenSSL()
-      InstallCheetah()
       InstallGit()
     end else begin
       ErrorMessage := 'There was an error installing the required dependencies.'
@@ -582,8 +555,7 @@ begin
             'Download and install dependencies:' + NewLine + \
             Space + 'Git' + NewLine + \
             Space + 'Python' + NewLine + \
-            Space + 'pyOpenSSL' + NewLine + \
-            Space + 'Cheetah' + NewLine + NewLine + \
+            Space + 'pyOpenSSL' + NewLine + NewLine + \
             'Web server port:' + NewLine + Space + GetWebPort('')
 
   if MemoTasksInfo <> '' then begin
