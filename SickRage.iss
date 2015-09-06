@@ -421,7 +421,7 @@ procedure InstallDependencies();
 begin
   try
     InstallDepPage.Show
-    InstallDepPage.SetProgress(0, 8)
+    InstallDepPage.SetProgress(0, 6)
     if VerifyDependencies() then begin
       InstallPython()
       InstallPyOpenSSL()
