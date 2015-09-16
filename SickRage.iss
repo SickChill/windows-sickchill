@@ -1,5 +1,7 @@
 #include <.\idp\idp.iss>
 
+#define SickRageInstallerVersion "v0.3"
+
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickRage"
 #define AppVersion "master"
@@ -46,8 +48,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "utils\unzip.exe"; Flags: dontcopy
 Source: "assets\sickrage.ico"; DestDir: "{app}\Installer"
 Source: "assets\github.ico"; DestDir: "{app}\Installer"
-Source: "utils\nssm32.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Check: Is64BitInstallMode
-Source: "utils\nssm64.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Check: not Is64BitInstallMode
+Source: "utils\nssm32.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Check: not Is64BitInstallMode
+Source: "utils\nssm64.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Check: Is64BitInstallMode
 
 [Dirs]
 Name: "{app}\Data"
@@ -81,6 +83,8 @@ Type: dirifempty; Name: "{app}"
 
 [Messages]
 WelcomeLabel2=This will install [name/ver] on your computer.%n%nYou will need Internet connectivity in order to download the required packages.
+AboutSetupNote=SickRageInstaller {#SickRageInstallerVersion}
+BeveledLabel=SickRageInstaller {#SickRageInstallerVersion}
 
 [Code]
 type
