@@ -1,22 +1,22 @@
 #include <.\idp\idp.iss>
 
-#define SickRageInstallerVersion "v0.3"
+#define SickRageInstallerVersion "v0.4"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickRage"
 #define AppVersion "master"
-#define AppPublisher "SiCKRAGE"
-#define AppURL "https://www.sickrage.tv/"
+#define AppPublisher "SickRage"
+#define AppURL "https://github.com/SickRage/SickRage"
 #define AppServiceName AppName
-#define AppServiceDescription "Searches TheTVDB and TVRage for shows"
+#define AppServiceDescription "Automatic Video Library Manager for TV Shows"
 #define ServiceStartIcon "{group}\Start " + AppName + " Service"
 #define ServiceStopIcon "{group}\Stop " + AppName + " Service"
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10001
+#define InstallerVersion 10002
 #define InstallerSeedUrl "https://raw.github.com/VinceVal/SickRageInstaller/master/seed.ini"
-#define AppRepoUrl "https://github.com/SiCKRAGETV/SickRage.git"
+#define AppRepoUrl "https://github.com/SickRage/SickRage.git"
 
 [Setup]
 AppId={#AppId}
