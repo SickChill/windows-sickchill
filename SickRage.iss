@@ -132,7 +132,7 @@ type
     function SaveCompleted(pszFileName: String): HResult;
     function GetCurFile(out pszFileName: String): HResult;
   end;
-  
+
   IShellLinkDataList = interface(IUnknown)
     '{45E2B4AE-B1C3-11D0-B92F-00A0C90312E1}'
     procedure Dummy;
@@ -185,37 +185,19 @@ begin
   PostMessage(WizardForm.Handle, WM_CLOSE, 0, 0);
 end;
 
-procedure InitializeSeedDownload();
-var
-  DownloadPage: TWizardPage;
-begin
-  // Download the installer seed INI file
-  // I'm adding a dummy size here otherwise the installer crashes (divide by 0)
-  // when runnning in silent mode, a bug in IDP maybe?
-  idpAddFileSize(ExpandConstant('{#InstallerSeedUrl}'), ExpandConstant('{tmp}\installer.ini'), 1024)
-
-  SeedDownloadPageId := idpCreateDownloadForm(wpWelcome)
-  DownloadPage := PageFromID(SeedDownloadPageId)
-  DownloadPage.Caption := 'Downloading Installer Configuration'
-  DownloadPage.Description := 'Setup is downloading it''s configuration file...'
-
-  idpConnectControls()
-  idpInitMessages()
-end;
-
 procedure CheckInstallerVersion(SeedFile: String);
 var
   InstallerVersion, CurrentVersion: Integer;
   DownloadUrl: String;
 begin
   InstallerVersion := StrToInt(ExpandConstant('{#InstallerVersion}'))
-  
+
   CurrentVersion := GetIniInt('Installer', 'Version', 0, 0, MaxInt, SeedFile)
 
   if CurrentVersion = 0 then begin
     AbortInstallation('Unable to parse configuration.')
   end;
-  
+
   if CurrentVersion > InstallerVersion then begin
     DownloadUrl := GetIniString('Installer', 'DownloadUrl', ExpandConstant('{#AppURL}'), SeedFile)
     AbortInstallation(ExpandConstant('This is an old version of the {#AppName} installer. Please get the latest version at:') + #13#10#13#10 + DownloadUrl)
@@ -235,7 +217,7 @@ begin
   if (Dependency.URL = '') or (Dependency.Size = 0) or (Dependency.SHA1 = '') then begin
     AbortInstallation('Error parsing dependency information for ' + Name + '.')
   end;
-  
+
   while Pos('/', Dependency.Filename) <> 0 do begin
     Delete(Dependency.Filename, 1, Pos('/', Dependency.Filename))
   end;
@@ -273,11 +255,51 @@ begin
   DownloadPage := PageFromID(DependencyDownloadPageId)
   DownloadPage.Caption := 'Downloading Dependencies'
   DownloadPage.Description := ExpandConstant('Setup is downloading {#AppName} dependencies...')
-  
+
   idpSetOption('DetailedMode', '1')
   idpSetOption('DetailsButton', '0')
 
   idpConnectControls()
+end;
+
+procedure InitializeSeedDownload();
+var
+  DownloadPage: TWizardPage;
+  Seed: String;
+  IsRemote: Boolean;
+begin
+  IsRemote := True
+
+  Seed := ExpandConstant('{param:SEED}')
+  if (Lowercase(Copy(Seed, 1, 7)) <> 'http://') and (Lowercase(Copy(Seed, 1, 8)) <> 'https://') then begin
+    if Seed = '' then begin
+      Seed := ExpandConstant('{#InstallerSeedUrl}')
+    end else begin
+      if FileExists(Seed) then begin
+        IsRemote := False
+      end else begin
+        MsgBox('Invalid SEED specified: ' + Seed, mbError, 0)
+        Seed := ExpandConstant('{#InstallerSeedUrl}')
+      end;
+    end;
+  end;
+
+  if not IsRemote then begin
+    FileCopy(Seed, ExpandConstant('{tmp}\installer.ini'), False)
+    ParseSeedFile()
+  end else begin
+    // Download the installer seed INI file
+    // I'm adding a dummy size here otherwise the installer crashes (divide by 0)
+    // when runnning in silent mode, a bug in IDP maybe?
+    idpAddFileSize(Seed, ExpandConstant('{tmp}\installer.ini'), 1024)
+
+    SeedDownloadPageId := idpCreateDownloadForm(wpWelcome)
+    DownloadPage := PageFromID(SeedDownloadPageId)
+    DownloadPage.Caption := 'Downloading Installer Configuration'
+    DownloadPage.Description := 'Setup is downloading it''s configuration file...'
+
+    idpConnectControls()
+  end;
 end;
 
 function CheckFileInUse(Filename: String): Boolean;
@@ -288,7 +310,7 @@ begin
     Result := False
     exit
   end;
-   
+
   FileHandle := CreateFile(Filename, GENERIC_READ or GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0)
   if (FileHandle <> 0) and (FileHandle <> INVALID_HANDLE_VALUE) then begin
     CloseHandle(FileHandle)
@@ -313,7 +335,7 @@ begin
 
   OldProgressString := WizardForm.StatusLabel.Caption;
   WizardForm.StatusLabel.Caption := ExpandConstant('Installing {#AppName} service...')
-  
+
   Exec(Nssm, ExpandConstant('install "{#AppServiceName}" "{app}\Python\python.exe" """{app}\{#AppName}\SickBeard.py""" --nolaunch --port='+GetWebPort('')+' --datadir="""{app}\Data"""'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppDirectory "{app}\Data"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" Description "{#AppServiceDescription}"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
@@ -332,7 +354,7 @@ var
   OldProgressString: String;
 begin
   Retries := 30
-  
+
   OldProgressString := UninstallProgressForm.StatusLabel.Caption;
   UninstallProgressForm.StatusLabel.Caption := ExpandConstant('Stopping {#AppName} service...')
 
@@ -428,8 +450,10 @@ procedure InitializeWizard();
 begin
   InitializeSeedDownload()
 
+  idpInitMessages()
+
   InstallDepPage := CreateOutputProgressPage('Installing Dependencies', ExpandConstant('Setup is installing {#AppName} dependencies...'));
-  
+
   OptionsPage := CreateInputQueryPage(wpSelectProgramGroup, 'Additional Options', ExpandConstant('Additional {#AppName} configuration options'), '');
   OptionsPage.Add(ExpandConstant('{#AppName} Web Server Port:'), False)
   OptionsPage.Values[0] := ExpandConstant('{#DefaultPort}')
@@ -459,7 +483,7 @@ begin
 
     // Save the ShellLink
     OleCheck(PF.Save(LinkFilename, True));
-    
+
     Result := True
   except
     Result := False
@@ -478,7 +502,7 @@ begin
 
   LocalFilesDir := ExpandConstant('{param:LOCALFILES}')
   if (LocalFilesDir <> '') and (not DirExists(LocalFilesDir)) then begin
-    MsgBox('Invalid LOCALFILESDIR specified: ' + LocalFilesDir, mbError, 0)
+    MsgBox('Invalid LOCALFILES specified: ' + LocalFilesDir, mbError, 0)
     LocalFilesDir := ''
   end;
 
