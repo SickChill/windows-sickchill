@@ -6,7 +6,7 @@
 #define AppName "SickRage"
 #define AppVersion "master"
 #define AppPublisher "SickRage"
-#define AppURL "https://github.com/SickRage/SickRage"
+#define AppURL "http://sickrage.github.io/"
 #define AppServiceName AppName
 #define AppServiceDescription "Automatic Video Library Manager for TV Shows"
 #define ServiceStartIcon "{group}\Start " + AppName + " Service"
