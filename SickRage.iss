@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickRageInstallerVersion "v0.4"
+#define SickRageInstallerVersion "v0.5"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickRage"
