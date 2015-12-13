@@ -1,12 +1,12 @@
 #include <.\idp\idp.iss>
 
-#define SickRageInstallerVersion "v0.4"
+#define SickRageInstallerVersion "v0.5"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickRage"
 #define AppVersion "master"
 #define AppPublisher "SickRage"
-#define AppURL "https://github.com/SickRage/SickRage"
+#define AppURL "http://sickrage.github.io/"
 #define AppServiceName AppName
 #define AppServiceDescription "Automatic Video Library Manager for TV Shows"
 #define ServiceStartIcon "{group}\Start " + AppName + " Service"
@@ -14,7 +14,7 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10002
+#define InstallerVersion 10003
 #define InstallerSeedUrl "https://raw.github.com/VinceVal/SickRageInstaller/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickRage/SickRage.git"
 
@@ -82,7 +82,7 @@ Type: filesandordirs; Name: "{app}\{#AppName}"
 Type: dirifempty; Name: "{app}"
 
 [Messages]
-WelcomeLabel2=This will install [name/ver] on your computer.%n%nYou will need Internet connectivity in order to download the required packages.
+WelcomeLabel2=This will install [name/ver] on your computer.%n%nYou will need Internet connectivity in order to download the required packages.%n%nNOTE: This installer intentionally ignores any existing installations of Git or Python you might already have installed on your system. If you would prefer to use those versions, we recommend installing [name] manually.
 AboutSetupNote=SickRageInstaller {#SickRageInstallerVersion}
 BeveledLabel=SickRageInstaller {#SickRageInstallerVersion}
 
@@ -132,7 +132,7 @@ type
     function SaveCompleted(pszFileName: String): HResult;
     function GetCurFile(out pszFileName: String): HResult;
   end;
-  
+
   IShellLinkDataList = interface(IUnknown)
     '{45E2B4AE-B1C3-11D0-B92F-00A0C90312E1}'
     procedure Dummy;
@@ -158,7 +158,7 @@ var
   CancelWithoutPrompt: Boolean;
   ErrorMessage, LocalFilesDir: String;
   SeedDownloadPageId, DependencyDownloadPageId: Integer;
-  PythonDep, PyOpenSSLDep, GitDep: TDependency;
+  PythonDep, GitDep: TDependency;
   InstallDepPage: TOutputProgressWizardPage;
   OptionsPage: TInputQueryWizardPage;
   // Uninstall variables
@@ -185,37 +185,19 @@ begin
   PostMessage(WizardForm.Handle, WM_CLOSE, 0, 0);
 end;
 
-procedure InitializeSeedDownload();
-var
-  DownloadPage: TWizardPage;
-begin
-  // Download the installer seed INI file
-  // I'm adding a dummy size here otherwise the installer crashes (divide by 0)
-  // when runnning in silent mode, a bug in IDP maybe?
-  idpAddFileSize(ExpandConstant('{#InstallerSeedUrl}'), ExpandConstant('{tmp}\installer.ini'), 1024)
-
-  SeedDownloadPageId := idpCreateDownloadForm(wpWelcome)
-  DownloadPage := PageFromID(SeedDownloadPageId)
-  DownloadPage.Caption := 'Downloading Installer Configuration'
-  DownloadPage.Description := 'Setup is downloading it''s configuration file...'
-
-  idpConnectControls()
-  idpInitMessages()
-end;
-
 procedure CheckInstallerVersion(SeedFile: String);
 var
   InstallerVersion, CurrentVersion: Integer;
   DownloadUrl: String;
 begin
   InstallerVersion := StrToInt(ExpandConstant('{#InstallerVersion}'))
-  
+
   CurrentVersion := GetIniInt('Installer', 'Version', 0, 0, MaxInt, SeedFile)
 
   if CurrentVersion = 0 then begin
     AbortInstallation('Unable to parse configuration.')
   end;
-  
+
   if CurrentVersion > InstallerVersion then begin
     DownloadUrl := GetIniString('Installer', 'DownloadUrl', ExpandConstant('{#AppURL}'), SeedFile)
     AbortInstallation(ExpandConstant('This is an old version of the {#AppName} installer. Please get the latest version at:') + #13#10#13#10 + DownloadUrl)
@@ -235,7 +217,7 @@ begin
   if (Dependency.URL = '') or (Dependency.Size = 0) or (Dependency.SHA1 = '') then begin
     AbortInstallation('Error parsing dependency information for ' + Name + '.')
   end;
-  
+
   while Pos('/', Dependency.Filename) <> 0 do begin
     Delete(Dependency.Filename, 1, Pos('/', Dependency.Filename))
   end;
@@ -267,18 +249,57 @@ begin
     Arch := 'x86';
 
   ParseDependency(PythonDep,    'Python.'    + Arch, SeedFile)
-  ParseDependency(PyOpenSSLDep, 'pyOpenSSL.' + Arch, SeedFile)
   ParseDependency(GitDep,       'Git.'       + Arch, SeedFile)
 
   DependencyDownloadPageId := idpCreateDownloadForm(wpPreparing)
   DownloadPage := PageFromID(DependencyDownloadPageId)
   DownloadPage.Caption := 'Downloading Dependencies'
   DownloadPage.Description := ExpandConstant('Setup is downloading {#AppName} dependencies...')
-  
+
   idpSetOption('DetailedMode', '1')
   idpSetOption('DetailsButton', '0')
 
   idpConnectControls()
+end;
+
+procedure InitializeSeedDownload();
+var
+  DownloadPage: TWizardPage;
+  Seed: String;
+  IsRemote: Boolean;
+begin
+  IsRemote := True
+
+  Seed := ExpandConstant('{param:SEED}')
+  if (Lowercase(Copy(Seed, 1, 7)) <> 'http://') and (Lowercase(Copy(Seed, 1, 8)) <> 'https://') then begin
+    if Seed = '' then begin
+      Seed := ExpandConstant('{#InstallerSeedUrl}')
+    end else begin
+      if FileExists(Seed) then begin
+        IsRemote := False
+      end else begin
+        MsgBox('Invalid SEED specified: ' + Seed, mbError, 0)
+        Seed := ExpandConstant('{#InstallerSeedUrl}')
+      end;
+    end;
+  end;
+
+  if not IsRemote then begin
+    FileCopy(Seed, ExpandConstant('{tmp}\installer.ini'), False)
+    ParseSeedFile()
+  end else begin
+    // Download the installer seed INI file
+    // I'm adding a dummy size here otherwise the installer crashes (divide by 0)
+    // when runnning in silent mode, a bug in IDP maybe?
+    idpAddFileSize(Seed, ExpandConstant('{tmp}\installer.ini'), 1024)
+
+    SeedDownloadPageId := idpCreateDownloadForm(wpWelcome)
+    DownloadPage := PageFromID(SeedDownloadPageId)
+    DownloadPage.Caption := 'Downloading Installer Configuration'
+    DownloadPage.Description := 'Setup is downloading it''s configuration file...'
+
+    idpConnectControls()
+  end;
 end;
 
 function CheckFileInUse(Filename: String): Boolean;
@@ -289,7 +310,7 @@ begin
     Result := False
     exit
   end;
-   
+
   FileHandle := CreateFile(Filename, GENERIC_READ or GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0)
   if (FileHandle <> 0) and (FileHandle <> INVALID_HANDLE_VALUE) then begin
     CloseHandle(FileHandle)
@@ -314,7 +335,7 @@ begin
 
   OldProgressString := WizardForm.StatusLabel.Caption;
   WizardForm.StatusLabel.Caption := ExpandConstant('Installing {#AppName} service...')
-  
+
   Exec(Nssm, ExpandConstant('install "{#AppServiceName}" "{app}\Python\python.exe" """{app}\{#AppName}\SickBeard.py""" --nolaunch --port='+GetWebPort('')+' --datadir="""{app}\Data"""'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppDirectory "{app}\Data"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" Description "{#AppServiceDescription}"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
@@ -333,7 +354,7 @@ var
   OldProgressString: String;
 begin
   Retries := 30
-  
+
   OldProgressString := UninstallProgressForm.StatusLabel.Caption;
   UninstallProgressForm.StatusLabel.Caption := ExpandConstant('Stopping {#AppName} service...')
 
@@ -373,17 +394,6 @@ begin
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
 end;
 
-procedure InstallPyOpenSSL();
-var
-  ResultCode: Integer;
-begin
-  InstallDepPage.SetText('Installing pyOpenSSL...', '')
-  ExtractTemporaryFile('unzip.exe')
-  Exec(ExpandConstant('{tmp}\unzip.exe'), ExpandConstantEx('-o "{tmp}\{filename}" -d "{tmp}\pyOpenSSL.tmp"', 'filename', PyOpenSslDep.Filename), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
-  Exec('xcopy.exe', ExpandConstant('"{tmp}\pyOpenSSL.tmp\PLATLIB\*" "{app}\Python\Lib\site-packages\" /E /H /Y'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
-  InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
-end;
-
 procedure InstallGit();
 var
   ResultCode: Integer;
@@ -410,7 +420,6 @@ begin
   Result := True
 
   Result := Result and VerifyDependency(PythonDep)
-  Result := Result and VerifyDependency(PyOpenSSLDep)
   Result := Result and VerifyDependency(GitDep)
 end;
 
@@ -428,7 +437,6 @@ begin
     InstallDepPage.SetProgress(0, 6)
     if VerifyDependencies() then begin
       InstallPython()
-      InstallPyOpenSSL()
       InstallGit()
     end else begin
       ErrorMessage := 'There was an error installing the required dependencies.'
@@ -442,8 +450,10 @@ procedure InitializeWizard();
 begin
   InitializeSeedDownload()
 
+  idpInitMessages()
+
   InstallDepPage := CreateOutputProgressPage('Installing Dependencies', ExpandConstant('Setup is installing {#AppName} dependencies...'));
-  
+
   OptionsPage := CreateInputQueryPage(wpSelectProgramGroup, 'Additional Options', ExpandConstant('Additional {#AppName} configuration options'), '');
   OptionsPage.Add(ExpandConstant('{#AppName} Web Server Port:'), False)
   OptionsPage.Values[0] := ExpandConstant('{#DefaultPort}')
@@ -473,7 +483,7 @@ begin
 
     // Save the ShellLink
     OleCheck(PF.Save(LinkFilename, True));
-    
+
     Result := True
   except
     Result := False
@@ -492,7 +502,7 @@ begin
 
   LocalFilesDir := ExpandConstant('{param:LOCALFILES}')
   if (LocalFilesDir <> '') and (not DirExists(LocalFilesDir)) then begin
-    MsgBox('Invalid LOCALFILESDIR specified: ' + LocalFilesDir, mbError, 0)
+    MsgBox('Invalid LOCALFILES specified: ' + LocalFilesDir, mbError, 0)
     LocalFilesDir := ''
   end;
 
@@ -558,8 +568,7 @@ begin
             MemoGroupInfo + NewLine + NewLine + \
             'Download and install dependencies:' + NewLine + \
             Space + 'Git' + NewLine + \
-            Space + 'Python' + NewLine + \
-            Space + 'pyOpenSSL' + NewLine + NewLine + \
+            Space + 'Python' + NewLine + NewLine + \
             'Web server port:' + NewLine + Space + GetWebPort('')
 
   if MemoTasksInfo <> '' then begin

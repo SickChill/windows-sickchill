@@ -1,10 +1,12 @@
 # SickRageInstaller
 A Windows Installer for SickRage
 
+**NOTE:** This installer intentionally ignores any existing installations of Git or Python you might already have installed on your system. If you would prefer to use those versions, we recommend installing SickRage manually.
+
 Features
 --------
 Here are some of the features of SickRageInstaller:
-- Downloads SickRage dependencies (Git, Python, pyOpenSSL)
+- Downloads SickRage dependencies (Git, Python)
 - Installs everything (SickRage and dependencies) in a self-contained directory
 - Installs SickRage as a Windows service (handled by NSSM)
 - Detects 32-bit and 64-bit architectures and installs appropriate dependencies
