@@ -14,7 +14,7 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10002
+#define InstallerVersion 10003
 #define InstallerSeedUrl "https://raw.github.com/VinceVal/SickRageInstaller/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickRage/SickRage.git"
 
