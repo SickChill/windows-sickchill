@@ -158,7 +158,7 @@ var
   CancelWithoutPrompt: Boolean;
   ErrorMessage, LocalFilesDir: String;
   SeedDownloadPageId, DependencyDownloadPageId: Integer;
-  PythonDep, PyOpenSSLDep, GitDep: TDependency;
+  PythonDep, GitDep: TDependency;
   InstallDepPage: TOutputProgressWizardPage;
   OptionsPage: TInputQueryWizardPage;
   // Uninstall variables
@@ -267,7 +267,6 @@ begin
     Arch := 'x86';
 
   ParseDependency(PythonDep,    'Python.'    + Arch, SeedFile)
-  ParseDependency(PyOpenSSLDep, 'pyOpenSSL.' + Arch, SeedFile)
   ParseDependency(GitDep,       'Git.'       + Arch, SeedFile)
 
   DependencyDownloadPageId := idpCreateDownloadForm(wpPreparing)
@@ -373,17 +372,6 @@ begin
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
 end;
 
-procedure InstallPyOpenSSL();
-var
-  ResultCode: Integer;
-begin
-  InstallDepPage.SetText('Installing pyOpenSSL...', '')
-  ExtractTemporaryFile('unzip.exe')
-  Exec(ExpandConstant('{tmp}\unzip.exe'), ExpandConstantEx('-o "{tmp}\{filename}" -d "{tmp}\pyOpenSSL.tmp"', 'filename', PyOpenSslDep.Filename), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
-  Exec('xcopy.exe', ExpandConstant('"{tmp}\pyOpenSSL.tmp\PLATLIB\*" "{app}\Python\Lib\site-packages\" /E /H /Y'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
-  InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
-end;
-
 procedure InstallGit();
 var
   ResultCode: Integer;
@@ -410,7 +398,6 @@ begin
   Result := True
 
   Result := Result and VerifyDependency(PythonDep)
-  Result := Result and VerifyDependency(PyOpenSSLDep)
   Result := Result and VerifyDependency(GitDep)
 end;
 
@@ -428,7 +415,6 @@ begin
     InstallDepPage.SetProgress(0, 6)
     if VerifyDependencies() then begin
       InstallPython()
-      InstallPyOpenSSL()
       InstallGit()
     end else begin
       ErrorMessage := 'There was an error installing the required dependencies.'
@@ -558,8 +544,7 @@ begin
             MemoGroupInfo + NewLine + NewLine + \
             'Download and install dependencies:' + NewLine + \
             Space + 'Git' + NewLine + \
-            Space + 'Python' + NewLine + \
-            Space + 'pyOpenSSL' + NewLine + NewLine + \
+            Space + 'Python' + NewLine + NewLine + \
             'Web server port:' + NewLine + Space + GetWebPort('')
 
   if MemoTasksInfo <> '' then begin
