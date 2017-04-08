@@ -330,8 +330,10 @@ var
   Nssm: String;
   ResultCode: Integer;
   OldProgressString: String;
+  WindowsVersion: TWindowsVersion;
 begin
   Nssm := ExpandConstant('{app}\Installer\nssm.exe')
+  GetWindowsVersionEx(WindowsVersion);
 
   OldProgressString := WizardForm.StatusLabel.Caption;
   WizardForm.StatusLabel.Caption := ExpandConstant('Installing {#AppName} service...')
@@ -342,6 +344,10 @@ begin
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppStopMethodSkip 6'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppStopMethodConsole 20000'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppEnvironmentExtra "PATH={app}\Git\cmd;%PATH%"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
+
+  if Version.NTPlatform and (WindowsVersion.Major = 10) and (WindowsVersion.Minor = 0) and (WindowsVersion.Build > 14393) then begin
+    Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppNoConsole 1'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
+  end;
 
   WizardForm.StatusLabel.Caption := OldProgressString;
 end;
