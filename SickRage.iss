@@ -69,11 +69,18 @@ Filename: "{app}\Git\cmd\git.exe"; Parameters: "clone {#AppRepoUrl} {app}\{#AppN
 ;Filename: "xcopy.exe"; Parameters: """C:\SRinstaller\SickRage"" ""{app}\{#AppName}"" /E /I /H /Y"; Flags: runminimized; StatusMsg: "Installing {#AppName}..."
 ;Service
 Filename: "{app}\Installer\nssm.exe"; Parameters: "start ""{#AppServiceName}"""; Flags: runhidden; BeforeInstall: CreateService; StatusMsg: "Starting {#AppName} service..."
+;Firewall
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#AppServiceName} In"" program=""{app}\Python\python.exe"" dir=in action=allow enable=yes"; Flags: runhidden;
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#AppServiceName} Out"" program=""{app}\Python\python.exe"" dir=out action=allow enable=yes"; Flags: runhidden;
 ;Open
 Filename: "http://localhost:{code:GetWebPort}/"; Flags: postinstall shellexec; Description: "Open {#AppName} in browser"
 
 [UninstallRun]
+;Service
 Filename: "{app}\Installer\nssm.exe"; Parameters: "remove ""{#AppServiceName}"" confirm"; Flags: runhidden
+;Firewall
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#AppServiceName} In"""; Flags: runhidden;
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#AppServiceName} Out"""; Flags: runhidden;
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\Python"
