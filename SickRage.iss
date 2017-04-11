@@ -38,7 +38,6 @@ UninstallFilesDir={app}\Installer
 ExtraDiskSpaceRequired=524288000
 SetupIconFile=assets\sickrage.ico
 WizardImageFile=assets\Wizard.bmp
-WizardImageBackColor=$666666
 WizardSmallImageFile=assets\WizardSmall.bmp
 
 [Tasks]
