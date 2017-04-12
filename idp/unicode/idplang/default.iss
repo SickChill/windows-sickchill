@@ -1,6 +1,6 @@
 ﻿[CustomMessages]
 IDP_FormCaption           =Downloading additional files
-IDP_FormDescription       =Please wait, while setup downloading additional files...
+IDP_FormDescription       =Please wait while Setup is downloading additional files...
 IDP_TotalProgress         =Total progress
 IDP_CurrentFile           =Current file
 IDP_File                  =File:

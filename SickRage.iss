@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickRageInstallerVersion "v0.5.1"
+#define SickRageInstallerVersion "v0.5.2"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickRage"
@@ -14,7 +14,7 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10004
+#define InstallerVersion 10005
 #define InstallerSeedUrl "https://raw.githubusercontent.com/SickRage/SickRageInstaller/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickRage/SickRage.git"
 
@@ -30,6 +30,9 @@ AppUpdatesURL={#AppURL}
 DefaultDirName={sd}\{#AppName}
 DefaultGroupName={#AppName}
 AllowNoIcons=yes
+DisableWelcomePage=no
+DisableDirPage=no
+DisableProgramGroupPage=no
 ArchitecturesInstallIn64BitMode=x64
 OutputBaseFilename={#AppName}Installer
 SolidCompression=yes
@@ -301,7 +304,7 @@ begin
     SeedDownloadPageId := idpCreateDownloadForm(wpWelcome)
     DownloadPage := PageFromID(SeedDownloadPageId)
     DownloadPage.Caption := 'Downloading Installer Configuration'
-    DownloadPage.Description := 'Setup is downloading it''s configuration file...'
+    DownloadPage.Description := 'Setup is downloading its configuration file...'
 
     idpConnectControls()
   end;
