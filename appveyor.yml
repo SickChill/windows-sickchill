@@ -37,8 +37,7 @@ before_deploy:
 
 deploy:
   - provider: GitHub
-    release: $(ReleaseVersion)
-    description: ''
+    tag: $(ReleaseVersion)
     force_update: true         # replaces current release
     draft: true                # release as a draft
     auth_token:
