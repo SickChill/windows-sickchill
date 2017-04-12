@@ -21,10 +21,10 @@ build_script:
       $InstallerVersion = select-string -Path .\SickRage.iss -Pattern '^#define\sInstallerVersion\s([\d]+)' | % { $($_.matches.groups[1]).Value };
       $SeedVersion = select-string -Path .\seed.ini -Pattern '^Version=([\d]+)' | % { $($_.matches.groups[1]).Value };
       If ($InstallerVersion -ne $SeedVersion -and $APPVEYOR_REPO_BRANCH -ne "master" -and -not $APPVEYOR_PULL_REQUEST_NUMBER) {
-        "`n  Seed version differs from version in source code!" +
-        "`n    Version in source code: $InstallerVersion" +
-        "`n    Version in seed file:   $SeedVersion" +
-        "`n  Make sure to update the value before pushing to master" | Write-Warning
+        "`nSeed version differs from version in source code!" +
+        "`n  Version in source code: $InstallerVersion" +
+        "`n  Version in seed file:   $SeedVersion" +
+        "`nMake sure to update the value before pushing to master." | Write-Warning
       }
 
 test: off
