@@ -17,6 +17,15 @@ install:
 
 build_script:
   - cmd: iscc.exe /Q SickRage.iss
+  - ps: >-
+    $InstallerVersion = select-string -Path .\SickRage.iss -Pattern '^#define\sInstallerVersion\s([\d]+)' | % { $($_.matches.groups[1]).Value };
+    $SeedVersion = select-string -Path .\seed.ini -Pattern '^Version=([\d]+)' | % { $($_.matches.groups[1]).Value };
+    If ($InstallerVersion -ne $SeedVersion -and $APPVEYOR_REPO_BRANCH -ne "master" -and -not $APPVEYOR_PULL_REQUEST_NUMBER) {
+        Write-Warning "Seed version differs from version in source code!`n" +
+              "`tVersion in source code: $InstallerVersion`n" +
+              "`tVersion in seed file:   $SeedVersion"
+              "Make sure to update the value before pushing to master"
+      }
 
 test: off
 
@@ -27,12 +36,11 @@ artifacts:
 before_deploy:
   - ps: $env:ReleaseVersion = select-string -Path .\SickRage.iss -Pattern '^#define\sSickRageInstallerVersion\s"(v[\d.]+)"' | % { $($_.matches.groups[1]).Value }
   - ps: >-
-      $InstallerVersion = select-string -Path .\SickRage.iss -Pattern '^#define\sInstallerVersion\s([\d]+)' | % { $($_.matches.groups[1]).Value };
-      $SeedVersion = select-string -Path .\seed.ini -Pattern '^Version=([\d]+)' | % { $($_.matches.groups[1]).Value };
       If ($InstallerVersion -ne $SeedVersion) {
-        throw "Update seed version differs from version in source code!`n" +
+        throw "Seed version differs from version in source code!`n" +
               "`tVersion in source code: $InstallerVersion`n" +
               "`tVersion in seed file:   $SeedVersion"
+              "You have to update the value before releasing"
       }
 
 deploy:
