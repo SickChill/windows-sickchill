@@ -1,0 +1,48 @@
+version: '{build}'
+pull_requests:
+  do_not_increment_build_number: true
+max_jobs: 1
+image: Visual Studio 2017
+
+skip_tags: true
+only_commits:
+  files:
+    - SickRage.iss
+    - idp/**
+    - assets/**
+    - appveyor.yml
+
+install:
+  - ps: choco install -y --no-progress InnoSetup
+
+build_script:
+  - cmd: iscc.exe /Q SickRage.iss
+
+test: off
+
+artifacts:
+  - path: Output\SickRageInstaller.exe
+    name: SickRageInstaller.exe
+
+before_deploy:
+  - ps: $env:ReleaseVersion = select-string -Path .\SickRage.iss -Pattern '^#define\sSickRageInstallerVersion\s"(v[\d.]+)"' | % { $($_.matches.groups[1]).Value }
+  - ps: >-
+      $InstallerVersion = select-string -Path .\SickRage.iss -Pattern '^#define\sInstallerVersion\s([\d]+)' | % { $($_.matches.groups[1]).Value };
+      $SeedVersion = select-string -Path .\seed.ini -Pattern '^Version=([\d]+)' | % { $($_.matches.groups[1]).Value };
+      If ($InstallerVersion -ne $SeedVersion) {
+        throw "Update seed version differs from version in source code!`n" +
+              "`tVersion in source code: $InstallerVersion`n" +
+              "`tVersion in seed file:   $SeedVersion"
+      }
+
+deploy:
+  - provider: GitHub
+    release: $(ReleaseVersion)
+    description: ''
+    force_update: true         # replaces current release
+    draft: true                # release as a draft
+    auth_token:
+      secure: Jmp8JMqRCuCKR7RfsMPkQccXatcLQXe6PfYhkRTvaGK5h7ap6FFOG4he+ppOWzuI
+    artifact: SickRageInstaller.exe
+    on:
+      branch: master           # release from master branch only
