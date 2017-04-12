@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickRageInstallerVersion "v0.5"
+#define SickRageInstallerVersion "v0.5.1"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickRage"
@@ -14,8 +14,8 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10003
-#define InstallerSeedUrl "https://raw.github.com/VinceVal/SickRageInstaller/master/seed.ini"
+#define InstallerVersion 10004
+#define InstallerSeedUrl "https://raw.githubusercontent.com/SickRage/SickRageInstaller/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickRage/SickRage.git"
 
 [Setup]
@@ -38,14 +38,12 @@ UninstallFilesDir={app}\Installer
 ExtraDiskSpaceRequired=524288000
 SetupIconFile=assets\sickrage.ico
 WizardImageFile=assets\Wizard.bmp
-WizardImageBackColor=$666666
 WizardSmallImageFile=assets\WizardSmall.bmp
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "utils\unzip.exe"; Flags: dontcopy
 Source: "assets\sickrage.ico"; DestDir: "{app}\Installer"
 Source: "assets\github.ico"; DestDir: "{app}\Installer"
 Source: "utils\nssm32.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Check: not Is64BitInstallMode

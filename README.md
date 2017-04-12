@@ -1,4 +1,5 @@
-# SickRageInstaller
+SickRageInstaller [![Build status](https://ci.appveyor.com/api/projects/status/yub1d59qlfub8uvb/branch/master?svg=true)](https://ci.appveyor.com/project/sharkykh/sickrageinstaller/branch/master)
+=========
 A Windows Installer for SickRage
 
 **NOTE:** This installer intentionally ignores any existing installations of Git or Python you might already have installed on your system. If you would prefer to use those versions, we recommend installing SickRage manually.
