@@ -1,10 +1,9 @@
+image: Visual Studio 2017
 version: '{build}'
+max_jobs: 1
+clone_depth: 5
 pull_requests:
   do_not_increment_build_number: true
-max_jobs: 1
-image: Visual Studio 2017
-
-test: off
 skip_tags: true
 only_commits:
   files:
@@ -32,11 +31,13 @@ before_build:
           "`nSeed version differs from version in source code!" + `
           "`n  Version in source code: $InstallerVersion" + `
           "`n  Version in seed file:   $SeedVersion" + `
-          "`nMake sure to update the value before pushing to master." | Write-Warning `
-        }
+          "`nMake sure to update the value before pushing to master." `
+          | Write-Warning }
 
 build_script:
   - cmd: iscc.exe /Q SickRage.iss
+
+test: off
 
 artifacts:
   - path: Output\SickRageInstaller.exe
