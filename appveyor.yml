@@ -17,13 +17,16 @@ install:
   - ps: choco install -y --no-progress InnoSetup
 
 before_build:
-  - ps: $InstallerVersion = Select-String -Path .\SickRage.iss `
+  - ps: |-
+        $InstallerVersion = Select-String -Path .\SickRage.iss `
         -Pattern '^#define\sInstallerVersion\s([\d]+)' | `
-        % { $($_.matches.groups[1]).Value }
-  - ps: $SeedVersion = Select-String -Path .\seed.ini `
+        % { $($_.matches.groups[1]).Value };
+        
+        $SeedVersion = Select-String -Path .\seed.ini `
         -Pattern '^Version=([\d]+)' | `
-        % { $($_.matches.groups[1]).Value }
-  - ps: If ($InstallerVersion -ne $SeedVersion `
+        % { $($_.matches.groups[1]).Value };
+        
+        If ($InstallerVersion -ne $SeedVersion `
         -and $APPVEYOR_REPO_BRANCH -ne "master" `
         -and -not $APPVEYOR_PULL_REQUEST_NUMBER) { `
           "`nSeed version differs from version in source code!" + `
@@ -40,10 +43,11 @@ artifacts:
     name: SickRageInstaller.exe
 
 before_deploy:
-  - ps: $env:ReleaseVersion = Select-String -Path .\SickRage.iss `
+  - ps: |-
+        $env:ReleaseVersion = Select-String -Path .\SickRage.iss `
         -Pattern '^#define\sSickRageInstallerVersion\s"(v[\d.]+)"' | `
-        % { $($_.matches.groups[1]).Value }
-  - ps: If ($InstallerVersion -ne $SeedVersion) { `
+        % { $($_.matches.groups[1]).Value };
+        If ($InstallerVersion -ne $SeedVersion) { `
           throw "Seed version differs from version in source code!`n" + `
                 "`tVersion in source code: $InstallerVersion`n" + `
                 "`tVersion in seed file:   $SeedVersion" `
