@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickRageInstallerVersion "v0.5.2"
+#define SickRageInstallerVersion "v0.5.3"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickRage"
@@ -14,7 +14,7 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10005
+#define InstallerVersion 10006
 #define InstallerSeedUrl "https://raw.githubusercontent.com/SickRage/SickRageInstaller/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickRage/SickRage.git"
 
