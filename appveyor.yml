@@ -1,9 +1,9 @@
+image: Visual Studio 2017
 version: '{build}'
+max_jobs: 1
+clone_depth: 5
 pull_requests:
   do_not_increment_build_number: true
-max_jobs: 1
-image: Visual Studio 2017
-
 skip_tags: true
 only_commits:
   files:
@@ -15,17 +15,27 @@ only_commits:
 install:
   - ps: choco install -y --no-progress InnoSetup
 
+before_build:
+  - ps: |-
+        $InstallerVersion = Select-String -Path .\SickRage.iss `
+        -Pattern '^#define\sInstallerVersion\s([\d]+)' | `
+        % { $($_.matches.groups[1]).Value };
+        
+        $SeedVersion = Select-String -Path .\seed.ini `
+        -Pattern '^Version=([\d]+)' | `
+        % { $($_.matches.groups[1]).Value };
+        
+        If ($InstallerVersion -ne $SeedVersion `
+        -and $APPVEYOR_REPO_BRANCH -ne "master" `
+        -and -not $APPVEYOR_PULL_REQUEST_NUMBER) { `
+          "`nSeed version differs from version in source code!" + `
+          "`n  Version in source code: $InstallerVersion" + `
+          "`n  Version in seed file:   $SeedVersion" + `
+          "`nMake sure to update the value before pushing to master." `
+          | Write-Warning }
+
 build_script:
   - cmd: iscc.exe /Q SickRage.iss
-  - ps: >-
-      $InstallerVersion = select-string -Path .\SickRage.iss -Pattern '^#define\sInstallerVersion\s([\d]+)' | % { $($_.matches.groups[1]).Value };
-      $SeedVersion = select-string -Path .\seed.ini -Pattern '^Version=([\d]+)' | % { $($_.matches.groups[1]).Value };
-      If ($InstallerVersion -ne $SeedVersion -and $APPVEYOR_REPO_BRANCH -ne "master" -and -not $APPVEYOR_PULL_REQUEST_NUMBER) {
-        "`nSeed version differs from version in source code!" +
-        "`n  Version in source code: $InstallerVersion" +
-        "`n  Version in seed file:   $SeedVersion" +
-        "`nMake sure to update the value before pushing to master." | Write-Warning
-      }
 
 test: off
 
@@ -34,14 +44,15 @@ artifacts:
     name: SickRageInstaller.exe
 
 before_deploy:
-  - ps: $env:ReleaseVersion = select-string -Path .\SickRage.iss -Pattern '^#define\sSickRageInstallerVersion\s"(v[\d.]+)"' | % { $($_.matches.groups[1]).Value }
-  - ps: >-
-      If ($InstallerVersion -ne $SeedVersion) {
-        throw "Seed version differs from version in source code!`n" +
-              "`tVersion in source code: $InstallerVersion`n" +
-              "`tVersion in seed file:   $SeedVersion"
-              "You have to update the value before releasing"
-      }
+  - ps: |-
+        $env:ReleaseVersion = Select-String -Path .\SickRage.iss `
+        -Pattern '^#define\sSickRageInstallerVersion\s"(v[\d.]+)"' | `
+        % { $($_.matches.groups[1]).Value };
+        If ($InstallerVersion -ne $SeedVersion) { `
+          throw "Seed version differs from version in source code!`n" + `
+                "`tVersion in source code: $InstallerVersion`n" + `
+                "`tVersion in seed file:   $SeedVersion" `
+                "You have to update the value before releasing" }
 
 deploy:
   - provider: GitHub
