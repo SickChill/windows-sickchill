@@ -51,7 +51,7 @@ before_deploy:
         If ($InstallerVersion -ne $SeedVersion) { `
           throw "Seed version differs from version in source code!`n" + `
                 "`tVersion in source code: $InstallerVersion`n" + `
-                "`tVersion in seed file:   $SeedVersion" `
+                "`tVersion in seed file:   $SeedVersion" + `
                 "You have to update the value before releasing" }
 
 deploy:
