@@ -7,7 +7,7 @@ pull_requests:
 skip_tags: true
 only_commits:
   files:
-    - SickRage.iss
+    - SickChill.iss
     - idp/**
     - assets/**
     - appveyor.yml
@@ -17,7 +17,7 @@ install:
 
 before_build:
   - ps: |-
-        $InstallerVersion = Select-String -Path .\SickRage.iss `
+        $InstallerVersion = Select-String -Path .\SickChill.iss `
         -Pattern '^#define\sInstallerVersion\s([\d]+)' | `
         % { $($_.matches.groups[1]).Value };
         
@@ -35,18 +35,18 @@ before_build:
           | Write-Warning }
 
 build_script:
-  - cmd: iscc.exe /Q SickRage.iss
+  - cmd: iscc.exe /Q SickChill.iss
 
 test: off
 
 artifacts:
-  - path: Output\SickRageInstaller.exe
-    name: SickRageInstaller.exe
+  - path: Output\SickChillInstaller.exe
+    name: SickChillInstaller.exe
 
 before_deploy:
   - ps: |-
-        $env:ReleaseVersion = Select-String -Path .\SickRage.iss `
-        -Pattern '^#define\sSickRageInstallerVersion\s"(v[\d.]+)"' | `
+        $env:ReleaseVersion = Select-String -Path .\SickChill.iss `
+        -Pattern '^#define\sSickChillInstallerVersion\s"(v[\d.]+)"' | `
         % { $($_.matches.groups[1]).Value };
         If ($InstallerVersion -ne $SeedVersion) { `
           throw "Seed version differs from version in source code!`n" + `
@@ -61,6 +61,6 @@ deploy:
     draft: true                # release as a draft
     auth_token:
       secure: Jmp8JMqRCuCKR7RfsMPkQccXatcLQXe6PfYhkRTvaGK5h7ap6FFOG4he+ppOWzuI
-    artifact: SickRageInstaller.exe
+    artifact: SickChillInstaller.exe
     on:
       branch: master           # release from master branch only

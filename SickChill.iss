@@ -1,12 +1,12 @@
 #include <.\idp\idp.iss>
 
-#define SickRageInstallerVersion "v0.5.3"
+#define SickChillInstallerVersion "v0.5.3"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
-#define AppName "SickRage"
+#define AppName "SickChill"
 #define AppVersion "master"
-#define AppPublisher "SickRage"
-#define AppURL "http://sickrage.github.io/"
+#define AppPublisher "SickChill"
+#define AppURL "http://sickchill.github.io/"
 #define AppServiceName AppName
 #define AppServiceDescription "Automatic Video Library Manager for TV Shows"
 #define ServiceStartIcon "{group}\Start " + AppName + " Service"
@@ -15,8 +15,8 @@
 #define DefaultPort 8081
 
 #define InstallerVersion 10006
-#define InstallerSeedUrl "https://raw.githubusercontent.com/SickRage/SickRageInstaller/master/seed.ini"
-#define AppRepoUrl "https://github.com/SickRage/SickRage.git"
+#define InstallerSeedUrl "https://raw.githubusercontent.com/SickChill/SickChillInstaller/master/seed.ini"
+#define AppRepoUrl "https://github.com/SickChill/SickChill.git"
 
 [Setup]
 AppId={#AppId}
@@ -36,10 +36,10 @@ DisableProgramGroupPage=no
 ArchitecturesInstallIn64BitMode=x64
 OutputBaseFilename={#AppName}Installer
 SolidCompression=yes
-UninstallDisplayIcon={app}\Installer\sickrage.ico
+UninstallDisplayIcon={app}\Installer\sickchill.ico
 UninstallFilesDir={app}\Installer
 ExtraDiskSpaceRequired=524288000
-SetupIconFile=assets\sickrage.ico
+SetupIconFile=assets\sickchill.ico
 WizardImageFile=assets\Wizard.bmp
 WizardSmallImageFile=assets\WizardSmall.bmp
 
@@ -47,7 +47,7 @@ WizardSmallImageFile=assets\WizardSmall.bmp
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "assets\sickrage.ico"; DestDir: "{app}\Installer"
+Source: "assets\sickchill.ico"; DestDir: "{app}\Installer"
 Source: "assets\github.ico"; DestDir: "{app}\Installer"
 Source: "utils\nssm32.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Check: not Is64BitInstallMode
 Source: "utils\nssm64.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Check: Is64BitInstallMode
@@ -56,18 +56,18 @@ Source: "utils\nssm64.exe"; DestDir: "{app}\Installer"; DestName: "nssm.exe"; Ch
 Name: "{app}\Data"
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "http://localhost:{code:GetWebPort}/"; IconFilename: "{app}\Installer\sickrage.ico"
-Name: "{commondesktop}\{#AppName}"; Filename: "http://localhost:{code:GetWebPort}/"; IconFilename: "{app}\Installer\sickrage.ico"; Tasks: desktopicon
-Name: "{group}\{cm:ProgramOnTheWeb,{#AppName}}"; Filename: "{#AppURL}"; IconFilename: "{app}\Installer\sickrage.ico"; Flags: excludefromshowinnewinstall
+Name: "{group}\{#AppName}"; Filename: "http://localhost:{code:GetWebPort}/"; IconFilename: "{app}\Installer\sickchill.ico"
+Name: "{commondesktop}\{#AppName}"; Filename: "http://localhost:{code:GetWebPort}/"; IconFilename: "{app}\Installer\sickchill.ico"; Tasks: desktopicon
+Name: "{group}\{cm:ProgramOnTheWeb,{#AppName}}"; Filename: "{#AppURL}"; IconFilename: "{app}\Installer\sickchill.ico"; Flags: excludefromshowinnewinstall
 Name: "{group}\{#AppName} on GitHub"; Filename: "{#AppRepoUrl}"; IconFilename: "{app}\Installer\github.ico"; Flags: excludefromshowinnewinstall
 Name: "{#ServiceStartIcon}"; Filename: "{app}\Installer\nssm.exe"; Parameters: "start ""{#AppServiceName}"""; Flags: excludefromshowinnewinstall
 Name: "{#ServiceStopIcon}"; Filename: "{app}\Installer\nssm.exe"; Parameters: "stop ""{#AppServiceName}"""; Flags: excludefromshowinnewinstall
 Name: "{group}\Edit {#AppName} Service"; Filename: "{app}\Installer\nssm.exe"; Parameters: "edit ""{#AppServiceName}"""; AfterInstall: ModifyServiceLinks; Flags: excludefromshowinnewinstall
 
 [Run]
-;SickRage
+;SickChill
 Filename: "{app}\Git\cmd\git.exe"; Parameters: "clone {#AppRepoUrl} ""{app}\{#AppName}"""; StatusMsg: "Installing {#AppName}..."
-;Filename: "xcopy.exe"; Parameters: """C:\SRinstaller\SickRage"" ""{app}\{#AppName}"" /E /I /H /Y"; Flags: runminimized; StatusMsg: "Installing {#AppName}..."
+;Filename: "xcopy.exe"; Parameters: """C:\SRinstaller\SickChill"" ""{app}\{#AppName}"" /E /I /H /Y"; Flags: runminimized; StatusMsg: "Installing {#AppName}..."
 ;Service
 Filename: "{app}\Installer\nssm.exe"; Parameters: "start ""{#AppServiceName}"""; Flags: runhidden; BeforeInstall: CreateService; StatusMsg: "Starting {#AppName} service..."
 ;Firewall
@@ -91,8 +91,8 @@ Type: dirifempty; Name: "{app}"
 
 [Messages]
 WelcomeLabel2=This will install [name/ver] on your computer.%n%nYou will need Internet connectivity in order to download the required packages.%n%nNOTE: This installer intentionally ignores any existing installations of Git or Python you might already have installed on your system. If you would prefer to use those versions, we recommend installing [name] manually.
-AboutSetupNote=SickRageInstaller {#SickRageInstallerVersion}
-BeveledLabel=SickRageInstaller {#SickRageInstallerVersion}
+AboutSetupNote=SickChillInstaller {#SickChillInstallerVersion}
+BeveledLabel=SickChillInstaller {#SickChillInstallerVersion}
 
 [Code]
 type
