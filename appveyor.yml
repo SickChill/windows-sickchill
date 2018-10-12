@@ -1,6 +1,6 @@
 image: Visual Studio 2017
 version: '{build}'
-max_jobs: 1
+max_jobs: 4
 clone_depth: 5
 pull_requests:
   do_not_increment_build_number: true
@@ -60,7 +60,7 @@ deploy:
     force_update: true         # replaces current release
     draft: true                # release as a draft
     auth_token:
-      secure: Jmp8JMqRCuCKR7RfsMPkQccXatcLQXe6PfYhkRTvaGK5h7ap6FFOG4he+ppOWzuI
+      secure: YZEpu6KzfHYG6BEHmvEjOQURvg7uTDPgKTaHDe8OEshhlCAk70tUNHskn0dmX3+a
     artifact: SickChillInstaller.exe
     on:
       branch: master           # release from master branch only
