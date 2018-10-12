@@ -21,6 +21,7 @@
 [Setup]
 AppId={#AppId}
 AppName={#AppName}
+AppCopyright=Copyright (C) 2016 SickChill
 AppVersion={#AppVersion}
 AppVerName={#AppName} ({#AppVersion})
 AppPublisher={#AppPublisher}
