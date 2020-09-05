@@ -60,7 +60,7 @@ deploy:
     force_update: true         # replaces current release
     draft: true                # release as a draft
     auth_token:
-      secure: YZEpu6KzfHYG6BEHmvEjOQURvg7uTDPgKTaHDe8OEshhlCAk70tUNHskn0dmX3+a
+      secure: gsxaw2HAH3MKoCppwwPy6LBmfbcDMbbTyTRZza+tc1Hda+Qr7MhswHhp6wqJoZQj
     artifact: SickChillInstaller.exe
     on:
       branch: master           # release from master branch only
