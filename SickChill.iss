@@ -405,7 +405,7 @@ var
   ResultCode: Integer;
 begin
   InstallDepPage.SetText('Installing Python...', '')
-  Exec(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename), ExpandConstantEx('/quiet TargetDir="{app}\Python3" InstallAllUsers=1 '), '', SW_SHOW, ewWaitUntilTerminated, ResultCode)
+  Exec(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename), ExpandConstant('/quiet TargetDir="{app}\Python3" InstallAllUsers=1'), '', SW_SHOW, ewWaitUntilTerminated, ResultCode)
   CleanPython()
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
 end;
