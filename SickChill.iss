@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickChillInstallerVersion "v0.5.5"
+#define SickChillInstallerVersion "v0.5.7"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickChill"
@@ -14,7 +14,7 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10007
+#define InstallerVersion 10008
 #define InstallerSeedUrl "https://raw.githubusercontent.com/SickChill/SickChillInstaller/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickChill/SickChill.git"
 
@@ -72,8 +72,8 @@ Filename: "{app}\Git\cmd\git.exe"; Parameters: "clone {#AppRepoUrl} ""{app}\{#Ap
 ;Service
 Filename: "{app}\Installer\nssm.exe"; Parameters: "start ""{#AppServiceName}"""; Flags: runhidden; BeforeInstall: CreateService; StatusMsg: "Starting {#AppName} service..."
 ;Firewall
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#AppServiceName} In"" program=""{app}\Python\python.exe"" dir=in action=allow enable=yes"; Flags: runhidden;
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#AppServiceName} Out"" program=""{app}\Python\python.exe"" dir=out action=allow enable=yes"; Flags: runhidden;
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#AppServiceName} In"" program=""{app}\Python3\python.exe"" dir=in action=allow enable=yes"; Flags: runhidden;
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#AppServiceName} Out"" program=""{app}\Python3\python.exe"" dir=out action=allow enable=yes"; Flags: runhidden;
 ;Open
 Filename: "http://localhost:{code:GetWebPort}/"; Flags: postinstall shellexec; Description: "Open {#AppName} in browser"
 
@@ -85,6 +85,7 @@ Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""{#AppServiceName} Out"""; Flags: runhidden;
 
 [UninstallDelete]
+Type: filesandordirs; Name: "{app}\Python3"
 Type: filesandordirs; Name: "{app}\Python"
 Type: filesandordirs; Name: "{app}\Git"
 Type: filesandordirs; Name: "{app}\{#AppName}"
@@ -347,7 +348,7 @@ begin
   OldProgressString := WizardForm.StatusLabel.Caption;
   WizardForm.StatusLabel.Caption := ExpandConstant('Installing {#AppName} service...')
 
-  Exec(Nssm, ExpandConstant('install "{#AppServiceName}" "{app}\Python\python3.exe" """{app}\{#AppName}\SickChill.py""" --nolaunch --port='+GetWebPort('')+' --datadir="""{app}\Data"""'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
+  Exec(Nssm, ExpandConstant('install "{#AppServiceName}" "{app}\Python3\python.exe" """{app}\{#AppName}\SickChill.py""" --nolaunch --port='+GetWebPort('')+' --datadir="""{app}\Data"""'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppDirectory "{app}\Data"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" Description "{#AppServiceDescription}"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppStopMethodSkip 6'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
@@ -389,7 +390,7 @@ procedure CleanPython();
 var
   PythonPath: String;
 begin
-  PythonPath := ExpandConstant('{app}\Python')
+  PythonPath := ExpandConstant('{app}\Python3')
 
   DelTree(PythonPath + '\*.msi',        False, True, False)
   DelTree(PythonPath + '\Doc',          True,  True, True)
@@ -404,7 +405,7 @@ var
   ResultCode: Integer;
 begin
   InstallDepPage.SetText('Installing Python...', '')
-  Exec('msiexec.exe', ExpandConstantEx('/A "{tmp}\{filename}" /QN TARGETDIR="{app}\Python"', 'filename', PythonDep.Filename), '', SW_SHOW, ewWaitUntilTerminated, ResultCode)
+  Exec(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename), ExpandConstantEx('/quiet TargetDir="{app}\Python3" InstallAllUsers=1 '), '', SW_SHOW, ewWaitUntilTerminated, ResultCode)
   CleanPython()
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
 end;
