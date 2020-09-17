@@ -402,34 +402,15 @@ begin
   DelTree(PythonPath + '\Tools',        True,  True, True)
 end;
 
-procedure UnZip(ZipPath, TargetPath: string);
-var
-  Shell: Variant;
-  ZipFile: Variant;
-  TargetFolder: Variant;
-begin
-  Shell := CreateOleObject('Shell.Application');
-
-  ZipFile := Shell.NameSpace(ZipPath);
-  if VarIsClear(ZipFile) then
-    RaiseException(Format('ZIP file "%s" does not exist or cannot be opened', [ZipPath]));
-
-  TargetFolder := Shell.NameSpace(TargetPath);
-  if VarIsClear(TargetFolder) then
-    RaiseException(Format('Target path "%s" does not exist', [TargetPath]));
-
-  TargetFolder.CopyHere(ZipFile.Items, SHCONTCH_NOPROGRESSBOX or SHCONTCH_RESPONDYESTOALL);
-end;
-
 procedure InstallPython();
-var
-  ResultCode: Integer;
 begin
   InstallDepPage.SetText('Installing Python...', '')
-  Unzip(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename), ExpandConstant('{app}\Python3'))
+  Shell := CreateOleObject('Shell.Application');
+  ZipFile := Shell.NameSpace(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename));
+  TargetFolder := Shell.NameSpace(ExpandConstant('{app}\Python3'));
+  TargetFolder.CopyHere(ZipFile.Items, SHCONTCH_NOPROGRESSBOX or SHCONTCH_RESPONDYESTOALL);
   CleanPython()
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
-  ResultCode := True
 end;
 
 procedure InstallGit();
