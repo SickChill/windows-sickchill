@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickChillInstallerVersion "v0.5.8"
+#define windows-sickchill-version "v0.5.8"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickChill"
@@ -93,8 +93,8 @@ Type: dirifempty; Name: "{app}"
 
 [Messages]
 WelcomeLabel2=This will install [name/ver] on your computer.%n%nYou will need Internet connectivity in order to download the required packages.%n%nNOTE: This installer intentionally ignores any existing installations of Git or Python you might already have installed on your system. If you would prefer to use those versions, we recommend installing [name] manually.
-AboutSetupNote=SickChillInstaller {#SickChillInstallerVersion}
-BeveledLabel=SickChillInstaller {#SickChillInstallerVersion}
+AboutSetupNote=windows-sickchill {#windows-sickchill-version}
+BeveledLabel=windows-sickchill {#windows-sickchill-version}
 
 [Code]
 type
