@@ -1,4 +1,4 @@
-windows-sickchill [![Build status](https://ci.appveyor.com/api/projects/status/yub1d59qlfub8uvb/branch/master?svg=true)](https://ci.appveyor.com/project/miigotu/windows-sickchill/branch/master)
+SickChillInstaller [![Build status](https://ci.appveyor.com/api/projects/status/yub1d59qlfub8uvb/branch/master?svg=true)](https://ci.appveyor.com/project/miigotu/sickchillinstaller/branch/master)
 ===================================================================================================================================================================================================
 A Windows Installer for SickChill
 
@@ -6,7 +6,7 @@ A Windows Installer for SickChill
 
 Features
 --------
-Here are some of the features of windows-sickchill:
+Here are some of the features of SickChillInstaller:
 - Downloads SickChill dependencies (Git, Python)
 - Installs everything (SickChill and dependencies) in a self-contained directory
 - Installs SickChill as a Windows service (handled by NSSM)

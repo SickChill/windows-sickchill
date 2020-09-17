@@ -40,13 +40,13 @@ build_script:
 test: off
 
 artifacts:
-  - path: Output\windows-sickchill.exe
-    name: windows-sickchill.exe
+  - path: Output\SickChillInstaller.exe
+    name: SickChillInstaller.exe
 
 before_deploy:
   - ps: |-
         $env:ReleaseVersion = Select-String -Path .\SickChill.iss `
-        -Pattern '^#define\swindows-sickchill\s"(v[\d.]+)"' | `
+        -Pattern '^#define\sSickChillInstallerVersion\s"(v[\d.]+)"' | `
         % { $($_.matches.groups[1]).Value };
         If ($InstallerVersion -ne $SeedVersion) { `
           throw "Seed version differs from version in source code!`n" + `
@@ -61,6 +61,6 @@ deploy:
     draft: true                # release as a draft
     auth_token:
       secure: gsxaw2HAH3MKoCppwwPy6LBmfbcDMbbTyTRZza+tc1Hda+Qr7MhswHhp6wqJoZQj
-    artifact: windows-sickchill.exe
+    artifact: SickChillInstaller.exe
     on:
       branch: master           # release from master branch only
