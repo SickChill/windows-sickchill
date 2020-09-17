@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickChillInstallerVersion "v0.5.7"
+#define SickChillInstallerVersion "v0.5.9"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickChill"
@@ -14,8 +14,8 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10008
-#define InstallerSeedUrl "https://raw.githubusercontent.com/SickChill/SickChillInstaller/master/seed.ini"
+#define InstallerVersion 10009
+#define InstallerSeedUrl "https://raw.githubusercontent.com/SickChill/windows-sickchill/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickChill/SickChill.git"
 
 [Setup]
@@ -162,6 +162,8 @@ const
   INVALID_HANDLE_VALUE = $FFFFFFFF;
   SLDF_RUNAS_USER      = $00002000;
   CLSID_ShellLink = '{00021401-0000-0000-C000-000000000046}';
+  SHCONTCH_NOPROGRESSBOX = 4;
+  SHCONTCH_RESPONDYESTOALL = 16;
 
 var
   // This lets AbortInstallation() terminate setup without prompting the user
@@ -403,11 +405,45 @@ end;
 procedure InstallPython();
 var
   ResultCode: Integer;
+  Shell: Variant;
+  ZipPath: Variant;
+  ZipFile: Variant;
+  TargetPath: Variant;
+  TargetFolder: Variant;
+  PythonPTHFile: Variant;
 begin
   InstallDepPage.SetText('Installing Python...', '')
-  Exec(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename), ExpandConstant('/quiet TargetDir="{app}\Python3" InstallAllUsers=1'), '', SW_SHOW, ewWaitUntilTerminated, ResultCode)
+  Shell := CreateOleObject('Shell.Application');
+  if VarIsClear(Shell) then
+      AbortInstallation('Failed to create Shell.Application');
+
+  ZipPath := ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename);
+  if VarIsClear(ZipPath) then
+        AbortInstallation('ZIP Path failed');
+
+  ZipFile := Shell.NameSpace(ZipPath);
+  if VarIsClear(ZipFile) then
+      AbortInstallation('ZIP file does not exist or cannot be opened');
+
+  TargetPath := ExpandConstant('{app}\Python3');
+  if ForceDirectories(TargetPath) then
+  begin
+    TargetFolder := Shell.NameSpace(TargetPath);
+    if VarIsClear(TargetFolder) then
+        AbortInstallation('Could not select target with shell');
+  end
+  else
+    AbortInstallation('Creation of folder failed!');
+
+  TargetFolder.CopyHere(ZipFile.Items, SHCONTCH_NOPROGRESSBOX or SHCONTCH_RESPONDYESTOALL);
+
+  PythonPTHFile := ExpandConstant('{app}\Python3\python38._pth');
+  SaveStringToFile(PythonPTHFile, #13#10 + '..\SickChill' + #13#10, True);
+  SaveStringToFile(PythonPTHFile, #13#10 + 'import site' + #13#10, True);
+
   CleanPython()
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
+  ResultCode := 0
 end;
 
 procedure InstallGit();
