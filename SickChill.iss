@@ -405,11 +405,11 @@ end;
 procedure InstallPython();
 var
   ResultCode: Integer;
-begin
-  InstallDepPage.SetText('Installing Python...', '')
   Shell := CreateOleObject('Shell.Application')
   ZipFile := Shell.NameSpace(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename))
   TargetFolder := Shell.NameSpace(ExpandConstant('{app}\Python3'))
+begin
+  InstallDepPage.SetText('Installing Python...', '')
   TargetFolder.CopyHere(ZipFile.Items, SHCONTCH_NOPROGRESSBOX or SHCONTCH_RESPONDYESTOALL)
   CleanPython()
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
