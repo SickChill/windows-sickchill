@@ -20,10 +20,10 @@ The install script is written using the excellent [Inno Setup](http://www.jrsoft
 
 Download
 --------
-Head on over to the [releases](https://github.com/SickChill/SickChillInstaller/releases/latest) tab.
+Head on over to the [releases](https://github.com/SickChill/windows-sickchill/releases/latest) tab.
 
 How It Works
 ------------
-First, the installer will grab a 'seed' file, located [here](https://raw.github.com/SickChill/SickChillInstaller/master/seed.ini). This has a list of the dependencies, the URLs they can be downloaded from, their size, and an SHA1 hash. It also uses this file to make sure the user is running the latest version of the installer.
+First, the installer will grab a 'seed' file, located [here](https://raw.github.com/SickChill/windows-sickchill/master/seed.ini). This has a list of the dependencies, the URLs they can be downloaded from, their size, and an SHA1 hash. It also uses this file to make sure the user is running the latest version of the installer.
 
 Once the user steps through the pages of the wizard, the installer downloads the dependency files and verifies the SHA1 hash. It then installs them into the directory chosen by the user. Once the dependencies are installed, it uses Git to clone the SickChill repository.

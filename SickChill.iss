@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickChillInstallerVersion "v0.5.7"
+#define SickChillInstallerVersion "v0.5.8"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickChill"
@@ -14,8 +14,8 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10008
-#define InstallerSeedUrl "https://raw.githubusercontent.com/SickChill/SickChillInstaller/master/seed.ini"
+#define InstallerVersion 10009
+#define InstallerSeedUrl "https://raw.githubusercontent.com/SickChill/windows-sickchill/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickChill/SickChill.git"
 
 [Setup]
@@ -162,6 +162,8 @@ const
   INVALID_HANDLE_VALUE = $FFFFFFFF;
   SLDF_RUNAS_USER      = $00002000;
   CLSID_ShellLink = '{00021401-0000-0000-C000-000000000046}';
+  SHCONTCH_NOPROGRESSBOX = 4;
+  SHCONTCH_RESPONDYESTOALL = 16;
 
 var
   // This lets AbortInstallation() terminate setup without prompting the user
@@ -400,14 +402,34 @@ begin
   DelTree(PythonPath + '\Tools',        True,  True, True)
 end;
 
+procedure UnZip(ZipPath, TargetPath: string);
+var
+  Shell: Variant;
+  ZipFile: Variant;
+  TargetFolder: Variant;
+begin
+  Shell := CreateOleObject('Shell.Application');
+
+  ZipFile := Shell.NameSpace(ZipPath);
+  if VarIsClear(ZipFile) then
+    RaiseException(Format('ZIP file "%s" does not exist or cannot be opened', [ZipPath]));
+
+  TargetFolder := Shell.NameSpace(TargetPath);
+  if VarIsClear(TargetFolder) then
+    RaiseException(Format('Target path "%s" does not exist', [TargetPath]));
+
+  TargetFolder.CopyHere(ZipFile.Items, SHCONTCH_NOPROGRESSBOX or SHCONTCH_RESPONDYESTOALL);
+end;
+
 procedure InstallPython();
 var
   ResultCode: Integer;
 begin
   InstallDepPage.SetText('Installing Python...', '')
-  Exec(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename), ExpandConstant('/quiet TargetDir="{app}\Python3" InstallAllUsers=1'), '', SW_SHOW, ewWaitUntilTerminated, ResultCode)
+  Unzip(ExpandConstantEx('{tmp}\{filename}', 'filename', PythonDep.Filename), ExpandConstant('{app}\Python3'))
   CleanPython()
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
+  ResultCode := True
 end;
 
 procedure InstallGit();
