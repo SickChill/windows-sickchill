@@ -222,7 +222,7 @@ var
 begin
   Dependency.Name     := Name;
   Dependency.URL      := GetIniString(Name, 'url', '', SeedFile)
-  Dependency.Filename := Dependency.URL
+  Dependency.Filename := GetIniString(Name, 'filename', Dependency.URL, SeedFile)
   Dependency.Size     := GetIniInt(Name, 'size', 0, 0, MaxInt, SeedFile)
   Dependency.SHA1     := GetIniString(Name, 'sha1', '', SeedFile)
 
@@ -260,8 +260,8 @@ begin
   else
     Arch := 'x86';
 
-  ParseDependency(PythonDep,    'Python.'    + Arch, SeedFile)
-  ParseDependency(GitDep,       'Git.'       + Arch, SeedFile)
+  ParseDependency(PythonDep, 'Python', SeedFile)
+  ParseDependency(GitDep, 'Git.' + Arch, SeedFile)
 
   DependencyDownloadPageId := idpCreateDownloadForm(wpPreparing)
   DownloadPage := PageFromID(DependencyDownloadPageId)
