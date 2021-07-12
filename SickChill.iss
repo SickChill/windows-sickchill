@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickChillInstallerVersion "v0.5.11"
+#define SickChillInstallerVersion "v0.6.0"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickChill"
@@ -67,7 +67,7 @@ Name: "{group}\Edit {#AppName} Service"; Filename: "{app}\Installer\nssm.exe"; P
 
 [Run]
 ;SickChill
-Filename: "{app}\Git\cmd\git.exe"; Parameters: "clone {#AppRepoUrl} ""{app}\{#AppName}"""; StatusMsg: "Installing {#AppName}..."
+Filename: "{app}\Python3\tools\python.exe"; Parameters: "-m pip install sickchill"; StatusMsg: "Installing {#AppName}..."
 ;Filename: "xcopy.exe"; Parameters: """C:\SRinstaller\SickChill"" ""{app}\{#AppName}"" /E /I /H /Y"; Flags: runminimized; StatusMsg: "Installing {#AppName}..."
 ;Service
 Filename: "{app}\Installer\nssm.exe"; Parameters: "start ""{#AppServiceName}"""; Flags: runhidden; BeforeInstall: CreateService; StatusMsg: "Starting {#AppName} service..."
@@ -87,7 +87,6 @@ Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\Python3"
 Type: filesandordirs; Name: "{app}\Python"
-Type: filesandordirs; Name: "{app}\Git"
 Type: filesandordirs; Name: "{app}\{#AppName}"
 Type: dirifempty; Name: "{app}"
 
@@ -170,7 +169,7 @@ var
   CancelWithoutPrompt: Boolean;
   ErrorMessage, LocalFilesDir: String;
   SeedDownloadPageId, DependencyDownloadPageId: Integer;
-  PythonDep, GitDep: TDependency;
+  PythonDep: TDependency;
   InstallDepPage: TOutputProgressWizardPage;
   OptionsPage: TInputQueryWizardPage;
   // Uninstall variables
@@ -255,13 +254,7 @@ begin
   // Make sure we're running the latest version of the installer
   CheckInstallerVersion(SeedFile)
 
-  if Is64BitInstallMode then
-    Arch := 'x64'
-  else
-    Arch := 'x86';
-
   ParseDependency(PythonDep, 'Python', SeedFile)
-  ParseDependency(GitDep, 'Git.' + Arch, SeedFile)
 
   DependencyDownloadPageId := idpCreateDownloadForm(wpPreparing)
   DownloadPage := PageFromID(DependencyDownloadPageId)
@@ -350,12 +343,11 @@ begin
   OldProgressString := WizardForm.StatusLabel.Caption;
   WizardForm.StatusLabel.Caption := ExpandConstant('Installing {#AppName} service...')
 
-  Exec(Nssm, ExpandConstant('install "{#AppServiceName}" "{app}\Python3\tools\python.exe" """{app}\{#AppName}\SickChill.py""" --nolaunch --port='+GetWebPort('')+' --datadir="""{app}\Data"""'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
+  Exec(Nssm, ExpandConstant('install "{#AppServiceName}" "{app}\Python3\tools\python.exe" """{app}\Python3\tools\Scripts\SickChill.py""" --nolaunch --port='+GetWebPort('')+' --datadir="""{app}\Data"""'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppDirectory "{app}\Data"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" Description "{#AppServiceDescription}"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppStopMethodSkip 6'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppStopMethodConsole 20000'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
-  Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppEnvironmentExtra "PATH={app}\Git\cmd;%PATH%"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
 
   if WindowsVersion.NTPlatform and (WindowsVersion.Major = 10) and (WindowsVersion.Minor = 0) and (WindowsVersion.Build > 14393) then begin
     Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppNoConsole 1'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
@@ -436,23 +428,8 @@ begin
     AbortInstallation('Creation of folder failed!');
 
   TargetFolder.CopyHere(ZipFile.Items, SHCONTCH_NOPROGRESSBOX or SHCONTCH_RESPONDYESTOALL);
-
-;  PythonPTHFile := ExpandConstant('{app}\Python3\python38._pth');
-;  SaveStringToFile(PythonPTHFile, #13#10 + '..\SickChill' + #13#10, True);
-;  SaveStringToFile(PythonPTHFile, #13#10 + 'import site' + #13#10, True);
-
-  CleanPython()
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
   ResultCode := 0
-end;
-
-procedure InstallGit();
-var
-  ResultCode: Integer;
-begin
-  InstallDepPage.SetText('Installing Git...', '')
-  Exec(ExpandConstantEx('{tmp}\{filename}', 'filename', GitDep.Filename), ExpandConstant('-InstallPath="{app}\Git" -y -gm2'), '', SW_SHOW, ewWaitUntilTerminated, ResultCode)
-  InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
 end;
 
 function VerifyDependency(Dependency: TDependency): Boolean;
@@ -467,14 +444,6 @@ begin
   InstallDepPage.SetProgress(InstallDepPage.ProgressBar.Position+1, InstallDepPage.ProgressBar.Max)
 end;
 
-function VerifyDependencies(): Boolean;
-begin
-  Result := True
-
-  Result := Result and VerifyDependency(PythonDep)
-  Result := Result and VerifyDependency(GitDep)
-end;
-
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
   if ErrorMessage <> '' then begin
@@ -487,9 +456,8 @@ begin
   try
     InstallDepPage.Show
     InstallDepPage.SetProgress(0, 6)
-    if VerifyDependencies() then begin
+    if VerifyDependency(PythonDep) then begin
       InstallPython()
-      InstallGit()
     end else begin
       ErrorMessage := 'There was an error installing the required dependencies.'
     end;
@@ -619,7 +587,6 @@ begin
   Result := MemoDirInfo + NewLine + NewLine + \
             MemoGroupInfo + NewLine + NewLine + \
             'Download and install dependencies:' + NewLine + \
-            Space + 'Git' + NewLine + \
             Space + 'Python' + NewLine + NewLine + \
             'Web server port:' + NewLine + Space + GetWebPort('')
 
