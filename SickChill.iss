@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickChillInstallerVersion "v0.6.0"
+#define SickChillInstallerVersion "v0.6.1"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickChill"
@@ -14,7 +14,7 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10009
+#define InstallerVersion 10010
 #define InstallerSeedUrl "https://raw.githubusercontent.com/SickChill/windows-sickchill/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickChill/SickChill.git"
 
@@ -254,7 +254,12 @@ begin
   // Make sure we're running the latest version of the installer
   CheckInstallerVersion(SeedFile)
 
-  ParseDependency(PythonDep, 'Python', SeedFile)
+  if Is64BitInstallMode then
+    Arch := 'x64'
+  else
+    Arch := 'x86';
+
+  ParseDependency(PythonDep, 'Python.' + Arch, SeedFile)
 
   DependencyDownloadPageId := idpCreateDownloadForm(wpPreparing)
   DownloadPage := PageFromID(DependencyDownloadPageId)
@@ -349,7 +354,7 @@ begin
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppStopMethodSkip 6'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppStopMethodConsole 20000'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
 
-  if WindowsVersion.NTPlatform and (WindowsVersion.Major = 10) and (WindowsVersion.Minor = 0) and (WindowsVersion.Build > 14393) then begin
+  if WindowsVersion.NTPlatform and (WindowsVersion.Major >= 10) and (WindowsVersion.Build > 14393) then begin
     Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppNoConsole 1'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   end;
 
