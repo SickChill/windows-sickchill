@@ -1,6 +1,6 @@
 #include <.\idp\idp.iss>
 
-#define SickChillInstallerVersion "v0.6.1"
+#define SickChillInstallerVersion "v0.6.2"
 
 #define AppId "{{B0D7EA3E-CC34-4BE6-95D5-3C3D31E9E1B2}"
 #define AppName "SickChill"
@@ -14,7 +14,7 @@
 
 #define DefaultPort 8081
 
-#define InstallerVersion 10010
+#define InstallerVersion 10011
 #define InstallerSeedUrl "https://raw.githubusercontent.com/SickChill/windows-sickchill/master/seed.ini"
 #define AppRepoUrl "https://github.com/SickChill/SickChill.git"
 
@@ -348,7 +348,7 @@ begin
   OldProgressString := WizardForm.StatusLabel.Caption;
   WizardForm.StatusLabel.Caption := ExpandConstant('Installing {#AppName} service...')
 
-  Exec(Nssm, ExpandConstant('install "{#AppServiceName}" "{app}\Python3\tools\python.exe" """{app}\Python3\tools\Scripts\SickChill.py""" --nolaunch --port='+GetWebPort('')+' --datadir="""{app}\Data"""'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
+  Exec(Nssm, ExpandConstant('install "{#AppServiceName}" "{app}\Python3\tools\python.exe" """{app}\Python3\tools\Scripts\SickChill.exe""" --nolaunch --port='+GetWebPort('')+' --datadir="""{app}\Data"""'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppDirectory "{app}\Data"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" Description "{#AppServiceDescription}"'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
   Exec(Nssm, ExpandConstant('set "{#AppServiceName}" AppStopMethodSkip 6'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode)
